@@ -22,10 +22,13 @@ import wave
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import audio_kit
+
 W, H, FPS = 1080, 1920, 30
-DUR = 60.0
+DUR = audio_kit.DUR
 NFRAMES = int(DUR * FPS)
-SR = 44100
+SR = audio_kit.SR
 
 HW, HH = W // 2, H // 2  # half-res mask canvas
 
@@ -352,9 +355,9 @@ def draw_text(img, text, size, y_frac, alpha, tracking=0, color=(255, 255, 255),
 
 # text, size, y, t_in, t_out, tracking, punch(bool)
 CAPTIONS = [
-    ("ATLANTIS ISN'T",      96, 0.30, 0.10, 1.70, 0, True),
-    ("THE STORY",           96, 0.355, 0.10, 1.70, 0, True),
-    ("30 FEET DOWN",       104, 0.32, 2.05, 3.90, 0, True),
+    ("ATLANTIS ISN'T",      96, 0.30, 0.10, 1.95, 0, True),
+    ("THE STORY",           96, 0.355, 0.10, 1.95, 0, True),
+    ("30 FEET DOWN",       104, 0.32, 3.90, 5.70, 0, True),
     ("THONIS-HERACLEION",   64, 0.31, 11.25, 13.60, 14, False),
     ("BEFORE ALEXANDRIA",   72, 0.32, 15.95, 17.90, 4, True),
     ("2000 AD",            132, 0.31, 26.20, 28.30, 8, True),
@@ -921,260 +924,11 @@ def render_frame(i):
 
 
 # ---------------------------------------------------------------------- audio
-
-VO_LINES = [
-    (0.30, 3.55, "Everyone calls Atlantis a fairy tale. Then divers found this. "
-                 "Thirty feet under the Mediterranean."),
-    (4.35, 6.30, "An entire Egyptian city. Temples, harbors, streets, "
-                 "and giants, face down in the silt."),
-    (11.30, 6.30, "This is Thonis Heracleion. Egypt's richest port, "
-                  "centuries before Alexandria was even built."),
-    (18.30, 7.20, "Herodotus wrote that Helen of Troy sheltered here. "
-                  "For two thousand years, scholars called that a myth."),
-    (26.35, 6.90, "Then in two thousand, Franck Goddio's sonar pinged "
-                  "something impossible in Abu Qir Bay."),
-    (34.20, 7.40, "Sixteen foot gods. Sixty four shipwrecks. Gold. "
-                  "And a granite slab carved with the city's own name."),
-    (42.30, 7.20, "It didn't drift under. The clay beneath it turned to liquid, "
-                  "and the temples' own weight pulled them down."),
-    (50.60, 4.05, "A quarter century of diving, and we've mapped "
-                  "maybe five percent."),
-    (54.90, 4.90, "Plato said a city vanished in a single night. "
-                  "Egypt has the receipts."),
-]
-
-
-def read_wav(path):
-    with wave.open(path, "rb") as w:
-        n, sr, ch = w.getnframes(), w.getframerate(), w.getnchannels()
-        raw = np.frombuffer(w.readframes(n), dtype=np.int16).astype(np.float32) / 32768.0
-    if ch > 1:
-        raw = raw.reshape(-1, ch).mean(axis=1)
-    if sr != SR:
-        src = np.linspace(0.0, 1.0, len(raw))
-        dst = np.linspace(0.0, 1.0, int(len(raw) * SR / sr))
-        raw = np.interp(dst, src, raw).astype(np.float32)
-    return raw
-
-
-def synth_vo():
-    """espeak-ng scratch VO, speed-fitted to each slot."""
-    track = np.zeros(int(DUR * SR) + SR, dtype=np.float32)
-    for idx, (t0, slot, text) in enumerate(VO_LINES):
-        path = os.path.join(SCRATCH, f"vo_{idx}.wav")
-        wpm = 168
-        for _ in range(6):
-            subprocess.run(
-                ["espeak-ng", "-v", "en-us+m3", "-s", str(wpm), "-p", "22",
-                 "-a", "170", "-g", "3", "-w", path, text],
-                check=True, capture_output=True,
-            )
-            a = read_wav(path)
-            dur = len(a) / SR
-            if dur <= slot:
-                break
-            wpm = int(wpm * (dur / slot) * 1.02) + 1
-        s = int(t0 * SR)
-        a *= 1.0
-        # short fades so espeak's hard edges don't click
-        f = int(0.012 * SR)
-        a[:f] *= np.linspace(0, 1, f)
-        a[-f:] *= np.linspace(1, 0, f)
-        track[s:s + len(a)] += a
-    return track[:int(DUR * SR)]
-
-
-def lp(x, taps):
-    k = np.hanning(taps)
-    k /= k.sum()
-    return np.convolve(x, k, mode="same").astype(np.float32)
-
-
-def synth_bed():
-    n = int(DUR * SR)
-    t = np.arange(n, dtype=np.float32) / SR
-    bed = np.zeros(n, dtype=np.float32)
-    rng = np.random.default_rng(7)
-
-    def at(t0, sig, gain=1.0):
-        s = int(t0 * SR)
-        e = min(n, s + len(sig))
-        if s >= n:
-            return
-        bed[s:e] += sig[: e - s] * gain
-
-    def env(ln, a=0.01, d=0.5, p=2.0):
-        k = np.linspace(0, 1, ln, dtype=np.float32)
-        atk = np.clip(k / max(a, 1e-6), 0, 1)
-        dec = np.exp(-k * d * 10.0) ** (1 / p)
-        return atk * dec
-
-    def noise(dur, lp_taps=120, seedoff=0):
-        ln = int(dur * SR)
-        x = np.random.default_rng(7 + seedoff).standard_normal(ln).astype(np.float32)
-        return lp(x, lp_taps)
-
-    def padd(*sigs):
-        """Sum signals of differing length, zero-padded to the longest."""
-        ln = max(len(x) for x in sigs)
-        acc = np.zeros(ln, dtype=np.float32)
-        for x in sigs:
-            acc[: len(x)] += x
-        return acc
-
-    def sine(f, dur, ph=0.0):
-        ln = int(dur * SR)
-        k = np.arange(ln, dtype=np.float32) / SR
-        return np.sin(2 * math.pi * f * k + ph).astype(np.float32)
-
-    def sweep(f0, f1, dur):
-        ln = int(dur * SR)
-        k = np.arange(ln, dtype=np.float32) / SR
-        f = f0 * (f1 / f0) ** (k / max(dur, 1e-6))
-        ph = 2 * math.pi * np.cumsum(f) / SR
-        return np.sin(ph).astype(np.float32)
-
-    # continuous drone bed
-    drone = (0.34 * np.sin(2 * math.pi * 41.0 * t)
-             + 0.20 * np.sin(2 * math.pi * 61.5 * t + 0.7)
-             + 0.12 * np.sin(2 * math.pi * 82.0 * t + 1.9))
-    lfo = 0.62 + 0.38 * np.sin(2 * math.pi * 0.09 * t)
-    prof = np.interp(t, [0, 0.5, 4, 11, 18, 26, 31.5, 34, 42, 49.5, 50.0,
-                         50.45, 55.5, 60],
-                        [0, 0.55, 0.7, 0.62, 0.5, 0.62, 0.95, 0.7, 1.0, 1.0,
-                         0.0, 0.0, 0.75, 0.95])
-    bed += (drone * lfo * prof * 0.30).astype(np.float32)
-
-    # water ambience
-    amb = lp(rng.standard_normal(n).astype(np.float32), 700)
-    amb_prof = np.interp(t, [0, 0.4, 4, 18, 26, 34, 42, 50, 60],
-                            [0, 0.9, 1.0, 0.15, 0.5, 0.8, 0.6, 0.7, 0.7])
-    bed += amb * amb_prof * 0.55
-
-    # 0:00 whoosh into the plunge
-    wh = noise(0.85, 40)
-    wh *= np.linspace(0.05, 1.0, len(wh)) ** 2 * np.exp(
-        -np.linspace(0, 1, len(wh)) * 1.2)
-    at(0.02, wh, 0.85)
-    at(0.42, noise(1.6, 900, 3) * env(int(1.6 * SR), 0.02, 0.35), 1.1)
-
-    # bass drops
-    for tt, g in ((0.44, 1.0), (2.55, 0.85)):
-        d = sweep(140, 32, 1.5) * env(int(1.5 * SR), 0.004, 0.30)
-        at(tt, d, 1.15 * g)
-
-    # sonar ping on "giants"
-    for tt, f, g in ((8.55, 880, 0.5), (26.55, 760, 0.55), (27.30, 900, 0.6),
-                     (28.05, 1080, 0.7)):
-        p = sine(f, 1.5) * env(int(1.5 * SR), 0.001, 0.55)
-        p += 0.35 * np.pad(sine(f, 1.5) * env(int(1.5 * SR), 0.001, 0.7),
-                           (int(0.22 * SR), 0))[: len(p)]
-        at(tt, p, g)
-
-    # oud-ish plucks + frame drum through the reconstruction
-    scale_hz = [146.8, 155.6, 174.6, 196.0, 233.1, 261.6]
-    for i, tt in enumerate(np.arange(13.35, 18.0, 0.42)):
-        f0 = scale_hz[[0, 2, 3, 1, 4, 5, 3, 2, 0, 3, 4, 2][i % 12]]
-        pl = sum((1.0 / (h + 1)) * sine(f0 * (h + 1), 1.1, ph=h)
-                 for h in range(5)) * env(int(1.1 * SR), 0.002, 0.75)
-        at(tt, pl, 0.20)
-    for tt in np.arange(13.3, 18.0, 0.84):
-        dr = (sine(58, 0.30) * env(int(0.30 * SR), 0.002, 1.6)
-              + noise(0.30, 60, 11) * env(int(0.30 * SR), 0.001, 3.0) * 0.5)
-        at(tt, dr, 0.42)
-
-    # quill scratches
-    for tt in np.arange(18.3, 21.5, 0.26):
-        sc = noise(0.16, 12, int(tt * 7)) * env(int(0.16 * SR), 0.01, 2.2)
-        at(tt, sc, 0.10)
-
-    # stamp thud on "myth"
-    at(22.00, sine(52, 1.0) * env(int(1.0 * SR), 0.001, 0.9), 1.0)
-    at(22.00, noise(0.35, 25, 5) * env(int(0.35 * SR), 0.001, 2.5), 0.55)
-
-    # riser into the discovery, hard hit on "impossible"
-    rs = noise(5.0, 60, 8)
-    k = np.linspace(0, 1, len(rs))
-    rs *= (k ** 2.4)
-    rs += sweep(180, 1500, 5.0) * (k ** 3) * 0.35
-    at(28.10, rs, 0.55)
-    at(31.65, sweep(160, 30, 1.8) * env(int(1.8 * SR), 0.003, 0.24), 1.3)
-    at(31.65, noise(0.5, 30, 9) * env(int(0.5 * SR), 0.001, 2.0), 0.5)
-
-    # percussive hit on each artifact cut
-    for tt in (34.02, 36.02, 38.02, 40.02):
-        hit = padd(sine(70, 0.5) * env(int(0.5 * SR), 0.001, 1.5),
-                   noise(0.22, 18, int(tt)) * env(int(0.22 * SR), 0.001, 3.0) * 0.7)
-        at(tt, hit, 0.85)
-    # coin shimmer
-    for i, tt in enumerate(np.arange(38.05, 40.0, 0.11)):
-        sh = sine(1800 + (i * 337) % 1400, 0.45) * env(int(0.45 * SR), 0.001, 1.6)
-        at(tt, sh, 0.10)
-    # stone grind under the stele
-    at(40.30, noise(1.7, 220, 12) * env(int(1.7 * SR), 0.08, 0.5), 0.55)
-
-    # liquefaction: rumble, cracks, flood
-    rum = noise(7.6, 1400, 13)
-    kk = np.linspace(0, 1, len(rum))
-    rum *= np.clip(kk * 2.2, 0, 1) * np.clip(1.6 - kk * 1.2, 0, 1)
-    at(42.10, rum, 1.5)
-    at(42.10, (sine(29, 7.6) * np.clip(np.linspace(0, 1, int(7.6 * SR)) * 2.0, 0, 1)),
-       0.55)
-    for tt in (45.0, 46.2, 47.4):
-        cr = noise(0.7, 14, int(tt * 3)) * env(int(0.7 * SR), 0.001, 1.4)
-        cr += sine(95, 0.7) * env(int(0.7 * SR), 0.002, 1.1) * 0.6
-        at(tt, cr, 0.75)
-    fl = noise(2.4, 90, 15)
-    kf = np.linspace(0, 1, len(fl))
-    fl *= np.clip(kf * 3.0, 0, 1) * np.clip(1.4 - kf * 1.4, 0, 1)
-    at(47.60, fl, 1.0)
-
-    # the 0:50 silence
-    s0, s1 = int(49.88 * SR), int(50.45 * SR)
-    bed[s0:s1] *= np.linspace(1.0, 0.0, s1 - s0) ** 2
-    bed[int(50.0 * SR):s1] = 0.0
-
-    # single low piano note out of the silence
-    pn = sum((1.0 / (h + 1) ** 1.35) * sine(110.0 * (h + 1), 4.0, ph=h * 0.6)
-             for h in range(7)) * env(int(4.0 * SR), 0.002, 0.30)
-    at(50.48, pn, 0.85)
-
-    # closing swell
-    sw = sine(43.0, 4.6) + 0.5 * sine(64.5, 4.6)
-    sw *= np.clip(np.linspace(0, 1, int(4.6 * SR)) * 1.6, 0, 1)
-    at(54.70, sw, 0.55)
-    at(54.70, noise(4.6, 500, 21) * np.clip(
-        np.linspace(0, 1, int(4.6 * SR)) * 1.5, 0, 1), 0.35)
-
-    return bed
-
+# Sound design and VO live in audio_kit so that render_audio.py exports exactly
+# what this video contains.
 
 def build_audio(path):
-    vo = synth_vo()
-    bed = synth_bed()
-    n = min(len(vo), len(bed))
-    vo, bed = vo[:n], bed[:n]
-
-    # duck the bed under the voice
-    envv = lp(np.abs(vo), 4000)
-    envv /= max(envv.max(), 1e-6)
-    duck = 1.0 - 0.55 * np.clip(envv * 3.0, 0, 1)
-    mix = bed * duck * 0.85 + vo * 1.05
-
-    mix = np.tanh(mix * 1.25) * 0.92
-    mix /= max(np.abs(mix).max(), 1e-6)
-    mix *= 0.94
-    f = int(0.03 * SR)
-    mix[:f] *= np.linspace(0, 1, f)
-    mix[-f:] *= np.linspace(1, 0, f)
-
-    st = np.stack([mix, mix], axis=1)
-    with wave.open(path, "wb") as w:
-        w.setnchannels(2)
-        w.setsampwidth(2)
-        w.setframerate(SR)
-        w.writeframes((st * 32767).astype(np.int16).tobytes())
-    return path
+    return audio_kit.write_wav(path, audio_kit.render_mix())
 
 
 # ----------------------------------------------------------------------- main

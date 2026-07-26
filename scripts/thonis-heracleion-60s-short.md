@@ -16,6 +16,7 @@
   - **No dead air in the first 3 seconds.** VO starts on frame one — no logo, no intro, no "hey guys."
   - Every scene should push the camera *forward* (dolly-in, descent, or reveal). Forward motion reads as progress and kills swipe-away.
   - Drop the music entirely at 0:50 for one beat before the final line. Silence is the most underused retention tool in Shorts.
+  - The hook line needs ~5.2s of speech and runs past the 0:04 picture cut — that is intentional. VO carrying over a cut smooths the descent; squeezing it inside four seconds forces a ~270 wpm read and wrecks the most important line in the video.
   - Give the closing two lines the full 0:50–1:00. Squeezing them into eight seconds forces a ~210 wpm read and throws away the ending.
 - **Color grade:** Teal-and-sand. Cold blue water, warm gold on the statues and artifacts. The contrast is what makes thumbnails and mid-scroll frames pop.
 
@@ -25,8 +26,8 @@
 
 | Timestamp & Scene | Visuals & AI Art Prompt | Voiceover (VO) & Sound Effects (SFX) |
 | --- | --- | --- |
-| **0:00–0:04**<br>**HOOK — The Challenge**<br>Hard cut from a bright, familiar Atlantis illustration to pitch-black water. Camera plunges downward through the surface. | **Animation:** Start on a 0.5s flash of a classic golden Atlantis concept-art city, then SMASH CUT to a top-down shot of the Mediterranean surface. Camera dives through the waterline in one continuous drop; light collapses from bright cyan to deep navy as we descend. Add floating particulate and a slow lens-drip effect on the "camera."<br><br>**AI Prompt:** `cinematic underwater descent through the mediterranean surface, sunlight shattering above into god rays, deep navy blue water, drifting silt particles, extreme sense of depth and scale, dark mysterious ocean, photorealistic 3d render, volumetric lighting, shallow depth of field --ar 9:16 --style raw` | **VO:** "Everyone calls Atlantis a fairy tale. Then divers found this — thirty feet under the Mediterranean."<br><br>**SFX:** [Sharp Air Whoosh] on the smash cut → [Underwater Plunge / Muffle] → [Deep Bass Drop] landing on the word "this" |
-| **0:04–0:11**<br>**THE REVEAL — Scale**<br>A drowned cityscape resolves out of the murk. A colossal stone face lies on its side in the silt. | **Animation:** Slow forward dolly through blue haze. Shapes emerge gradually — first a broken column, then a temple wall, then the reveal: a 16-foot granite head lying face-down in the sand. Push in until the eye of the statue fills a third of the frame. Add one tiny diver silhouette in the far background for scale — this single element is what sells the size.<br><br>**AI Prompt:** `colossal ancient egyptian granite statue head half buried in seafloor silt, submerged temple ruins behind it, tiny scuba diver silhouette in the distance for scale, dark teal water, golden particulate, awe-inspiring scale, cinematic 3d animation, epic wide angle, moody volumetric god rays --ar 9:16 --style raw` | **VO:** "An entire Egyptian city. Temples, harbors, streets — and giants, face-down in the silt."<br><br>**SFX:** [Low Sub-Bass Rumble building] + [Sonar Ping] on the word "giants" + [Muffled Underwater Ambience] |
+| **0:00–0:04**<br>**HOOK — The Challenge**<br>Hard cut from a bright, familiar Atlantis illustration to pitch-black water. Camera plunges downward through the surface. | **Animation:** Start on a 0.5s flash of a classic golden Atlantis concept-art city, then SMASH CUT to a top-down shot of the Mediterranean surface. Camera dives through the waterline in one continuous drop; light collapses from bright cyan to deep navy as we descend. Add floating particulate and a slow lens-drip effect on the "camera."<br><br>**AI Prompt:** `cinematic underwater descent through the mediterranean surface, sunlight shattering above into god rays, deep navy blue water, drifting silt particles, extreme sense of depth and scale, dark mysterious ocean, photorealistic 3d render, volumetric lighting, shallow depth of field --ar 9:16 --style raw` | **VO:** "Everyone calls Atlantis a fairy tale. Then divers found this — thirty feet down." *(runs to ~0:05.5, over the cut)*<br><br>**SFX:** [Sharp Air Whoosh] on the smash cut → [Underwater Plunge / Muffle] → [Deep Bass Drop] landing on the word "this" |
+| **0:04–0:11**<br>**THE REVEAL — Scale**<br>A drowned cityscape resolves out of the murk. A colossal stone face lies on its side in the silt. | **Animation:** Slow forward dolly through blue haze. Shapes emerge gradually — first a broken column, then a temple wall, then the reveal: a 16-foot granite head lying face-down in the sand. Push in until the eye of the statue fills a third of the frame. Add one tiny diver silhouette in the far background for scale — this single element is what sells the size.<br><br>**AI Prompt:** `colossal ancient egyptian granite statue head half buried in seafloor silt, submerged temple ruins behind it, tiny scuba diver silhouette in the distance for scale, dark teal water, golden particulate, awe-inspiring scale, cinematic 3d animation, epic wide angle, moody volumetric god rays --ar 9:16 --style raw` | **VO:** "An entire Egyptian city. Temples, streets — and giants, face-down in the silt."<br><br>**SFX:** [Low Sub-Bass Rumble building] + [Sonar Ping] on the word "giants" + [Muffled Underwater Ambience] |
 | **0:11–0:18**<br>**NAME DROP**<br>Title card burns onto the screen over the ruins. Cut to a golden reconstruction of the living city. | **Animation:** Hold on the ruins for 1s, then a quick "reality flip": the murky ruins dissolve into a warm, sunlit reconstruction of the same shot — the city alive, canals full of boats, linen sails, crowds on stone quays. Use a wipe or a light-bloom transition, not a fade.<br><br>**AI Prompt:** `ancient egyptian port city built on islands and canals, golden hour, wooden trading ships with linen sails crowding the harbor, massive temple of amun at the center, bustling crowds on stone quays, aerial establishing shot, cinematic historical reconstruction, warm sunlight, 3d render, highly detailed --ar 9:16 --style raw` | **VO:** "This is Thonis-Heracleion. Egypt's richest port centuries before Alexandria was even built."<br><br>**SFX:** [Egyptian Oud + Frame Drum enters] + [Reversed Cymbal Swell] on the reality flip + [Distant Harbor Crowd] |
 | **0:18–0:26**<br>**THE MYTH BEAT**<br>Herodotus's text and Helen of Troy — the "everyone thought this was fiction" turn. | **Animation:** Push across an aged Greek manuscript, ink lines animating on as if being written in real time. Cut to a stylized silhouette of Helen of Troy stepping off a ship onto a temple landing. Cut to a rubber "MYTH" stamp slamming down over the manuscript, then the page burning at the edges.<br><br>**AI Prompt:** `ancient greek manuscript page with handwritten ink, dramatic candlelight, silhouette of a woman in flowing robes stepping off a wooden ship onto an egyptian temple staircase, mysterious and mythic, chiaroscuro lighting, painterly cinematic animation, muted gold and deep shadow --ar 9:16 --style raw` | **VO:** "Herodotus wrote that Helen of Troy sheltered here. For two thousand years, scholars called that a myth."<br><br>**SFX:** [Quill Scratch] + [Heavy Stamp Thud] on the word "myth" + [Music drops out for 0.3s] |
 | **0:26–0:34**<br>**THE DISCOVERY**<br>2000 AD. Sonar sweep. Something impossible on the readout. | **Animation:** Hard cut to modern day — a research vessel on a grey sea, shot from a low waterline angle. Cut to a glowing green sonar display, sweep line rotating. On the third sweep, a massive rectangular structure resolves out of the noise. Whip-pan to a diver's torch cutting through darkness. Overlay the year "2000" in large clean type.<br><br>**AI Prompt:** `marine archaeology research vessel at dusk on a grey mediterranean sea, glowing green sonar screen revealing a massive submerged rectangular temple structure, scuba diver with a torch beam cutting through black water, documentary realism, cold blue and green color grade, cinematic tension --ar 9:16 --style raw` | **VO:** "Then in 2000, Franck Goddio's sonar pinged something impossible in Abu Qir Bay."<br><br>**SFX:** [Sonar Ping x3, rising pitch] + [Synth Riser] + [Hard Bass Hit] on "impossible" |
@@ -104,6 +105,36 @@ prompt, then cut the results against this timeline.
 To re-render after editing timings:
 
 ```
-pip install Pillow numpy imageio-ffmpeg && apt-get install -y espeak-ng
+pip install Pillow numpy imageio-ffmpeg && apt-get install -y espeak-ng mbrola mbrola-us2
 python3 tools/render_short.py renders/thonis-heracleion-animatic.mp4
 ```
+
+---
+
+## 6. Audio assets
+
+`audio/` holds the sound design and voiceover as separate, editor-ready files,
+generated by `tools/render_audio.py` from `tools/audio_kit.py`. Full index with
+timecodes is in `audio/cue-sheet.md`.
+
+| What | Where |
+| --- | --- |
+| 30 individual SFX one-shots, one per bracketed cue in the table above | `audio/sfx/` |
+| 9 voiceover lines, one file each | `audio/vo/` |
+| Stems: bed, SFX, VO, and music-and-effects-without-voice | `audio/stems/` |
+| Full mix as heard in the animatic | `audio/mix.wav` |
+
+Everything is 44.1 kHz / 16-bit stereo WAV and synthesized from oscillators and
+noise — no sampled library material, so there is nothing to licence or clear.
+All stems are the full 60 seconds starting at 0:00, so they drop onto a timeline
+with no offset.
+
+**The voiceover is scratch, not final.** It is espeak-ng driving MBROLA diphone
+voices, pitched down and put through a narration chain (de-essing, low-mid
+warmth, compression, short plate). Good enough to cut picture against; not good
+enough to publish. Record a human or use a commercial neural TTS for the real
+thing, and keep each line inside its slot length in the cue sheet — those slots
+are what the picture edit is built on.
+
+Use `audio/stems/bed_and_sfx_no_vo.wav` as the bed under a real VO. It already
+contains the 0:50 silence beat.

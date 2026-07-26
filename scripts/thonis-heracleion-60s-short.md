@@ -1,14 +1,14 @@
 # The Submerged Egyptian City That Makes Atlantis Look Real (Thonis-Heracleion)
 
 **Format:** YouTube Shorts / Reels / TikTok — vertical 9:16 cinematic animation
-**Runtime:** 58 seconds
-**VO word count:** 130 words (~2.2 words/sec — fast but breathable)
+**Runtime:** 60 seconds
+**VO word count:** 128 words (~2.1 words/sec — fast but breathable)
 
 ---
 
 ## 1. Hook & Pacing Guidelines
 
-- **Target length:** 50–60 seconds. Hard ceiling of 140 spoken words. This script runs 130 to leave room for two dramatic pauses.
+- **Target length:** 50–60 seconds. Hard ceiling of 140 spoken words. This script runs 128 to leave room for two dramatic pauses.
 - **Vibe:** Cinematic, mysterious, awe-inspiring, high-curiosity. Think deep-blue underwater god-rays, drifting silt, colossal stone faces emerging from darkness.
 - **The retention spine:** Hook with a challenge to a belief the viewer already holds (Atlantis is fake) → reveal the real thing → escalate the stakes → withhold the *how* until 0:42 → end on an open loop that forces a comment.
 - **Pacing rules:**
@@ -16,6 +16,7 @@
   - **No dead air in the first 3 seconds.** VO starts on frame one — no logo, no intro, no "hey guys."
   - Every scene should push the camera *forward* (dolly-in, descent, or reveal). Forward motion reads as progress and kills swipe-away.
   - Drop the music entirely at 0:50 for one beat before the final line. Silence is the most underused retention tool in Shorts.
+  - Give the closing two lines the full 0:50–1:00. Squeezing them into eight seconds forces a ~210 wpm read and throws away the ending.
 - **Color grade:** Teal-and-sand. Cold blue water, warm gold on the statues and artifacts. The contrast is what makes thumbnails and mid-scroll frames pop.
 
 ---
@@ -31,7 +32,7 @@
 | **0:26–0:34**<br>**THE DISCOVERY**<br>2000 AD. Sonar sweep. Something impossible on the readout. | **Animation:** Hard cut to modern day — a research vessel on a grey sea, shot from a low waterline angle. Cut to a glowing green sonar display, sweep line rotating. On the third sweep, a massive rectangular structure resolves out of the noise. Whip-pan to a diver's torch cutting through darkness. Overlay the year "2000" in large clean type.<br><br>**AI Prompt:** `marine archaeology research vessel at dusk on a grey mediterranean sea, glowing green sonar screen revealing a massive submerged rectangular temple structure, scuba diver with a torch beam cutting through black water, documentary realism, cold blue and green color grade, cinematic tension --ar 9:16 --style raw` | **VO:** "Then in 2000, Franck Goddio's sonar pinged something impossible in Abu Qir Bay."<br><br>**SFX:** [Sonar Ping x3, rising pitch] + [Synth Riser] + [Hard Bass Hit] on "impossible" |
 | **0:34–0:42**<br>**THE HAUL — Rapid-Fire Proof**<br>Machine-gun cuts through the artifacts. Fastest section in the video. | **Animation:** Four cuts in eight seconds, each ~2s, each a slow orbit around one object: (1) the 5-metre statue of Hapi rising upright through the water, (2) a wooden shipwreck hull ribbed like a skeleton on the seabed, (3) gold coins and jewellery glinting in a diver's glove, (4) a black granite stele, camera pushing onto the carved hieroglyphs of the city's name. Add a light-leak flash between each cut.<br><br>**AI Prompt:** `underwater archaeology artifacts, colossal granite statue of the egyptian god hapi being raised through blue water by cables, ancient shipwreck hull ribs on the seabed, gold coins glinting in a diver's hand, black granite stele covered in hieroglyphs, dramatic torch lighting, teal and gold color grade, cinematic macro detail --ar 9:16 --style raw` | **VO:** "Sixteen-foot gods. Sixty-four shipwrecks. Gold. And a granite slab carved with the city's own name."<br><br>**SFX:** [Percussive Hit on every cut] + [Metallic Coin Shimmer] + [Stone Grind] on "granite slab" |
 | **0:42–0:50**<br>**THE HOW — Payoff**<br>The ground itself liquefies. The city is swallowed by its own weight. | **Animation:** The money shot. Overhead view of the intact city. The earth beneath the great temple ripples like water, then loses form entirely. The temple doesn't topple — it *sinks straight down*, vertically, as the ground gives way beneath it. Slow the footage to 0.5x speed for the final 2 seconds as the water closes over the roofline.<br><br>**AI Prompt:** `ancient egyptian stone temple sinking vertically into liquefying wet ground, earth rippling like water around the foundations, seawater rushing in, catastrophic collapse, dust and debris, dramatic overhead cinematic shot, disaster movie realism, dark storm sky, 3d animation --ar 9:16 --style raw` | **VO:** "It didn't drift under. The clay beneath it turned to liquid — and the temples' own weight pulled them down."<br><br>**SFX:** [Deep Earth Rumble] + [Structural Stone Cracking] + [Massive Water Rush] + [Music cuts to silence at 0:50] |
-| **0:50–0:58**<br>**OPEN LOOP + CTA**<br>Pull back to the vastness of the unexplored site. End on the challenge. | **Animation:** Slow pull-back from a single diver's torch to an enormous dark seabed stretching beyond the frame — most of it unlit. Overlay a subtle wireframe grid where only a tiny corner is filled in. Final frame: the statue's face in darkness, one eye catching the light. Hold 0.5s past the last word — do NOT cut to black on the final syllable.<br><br>**AI Prompt:** `vast dark underwater archaeological site stretching into blackness, one small diver torch illuminating a fraction of enormous sunken ruins, overwhelming sense of the unexplored, deep navy water, faint god rays far above, lonely and epic, cinematic wide shot --ar 9:16 --style raw` | **VO:** "A quarter century of diving, and we've mapped maybe five percent of it." *(pause)* "Plato said a city vanished in a single night. Egypt has the receipts."<br><br>**SFX:** [Total Silence for 0.4s] → [Single Low Piano Note] → [Deep Bass Swell into final frame] |
+| **0:50–1:00**<br>**OPEN LOOP + CTA**<br>Pull back to the vastness of the unexplored site. End on the challenge. | **Animation:** Slow pull-back from a single diver's torch to an enormous dark seabed stretching beyond the frame — most of it unlit. Overlay a subtle wireframe grid where only a tiny corner is filled in. Final frame: the statue's face in darkness, one eye catching the light. Hold 0.5s past the last word — do NOT cut to black on the final syllable.<br><br>**AI Prompt:** `vast dark underwater archaeological site stretching into blackness, one small diver torch illuminating a fraction of enormous sunken ruins, overwhelming sense of the unexplored, deep navy water, faint god rays far above, lonely and epic, cinematic wide shot --ar 9:16 --style raw` | **VO:** "A quarter century of diving, and we've mapped maybe five percent." *(pause)* "Plato said a city vanished in a single night. Egypt has the receipts."<br><br>**SFX:** [Total Silence for 0.4s] → [Single Low Piano Note] → [Deep Bass Swell into final frame] |
 
 ---
 
@@ -78,3 +79,31 @@ Everything in the VO is defensible, but here's what's solid versus what's dramat
 - **Compressed for time:** the "five percent" figure is the commonly cited estimate from the excavation team, not a precise survey number — "a small fraction" is the safest phrasing if you want to be bulletproof.
 - **Dramatized:** the sinking. The leading explanation is soil liquefaction of the water-saturated clay delta soil under the weight of heavy stone buildings, triggered by earthquakes and floods, combined with sea-level rise and land subsidence — a process spread across centuries with sudden collapse events inside it, not one single night. The script says "it didn't drift under," which is accurate, and deliberately does *not* claim the whole city went down at once. Keep it that way.
 - **Do not claim:** that Thonis-Heracleion *is* Atlantis, or that Plato was writing about it. There's no evidence for either. The script only asks the question — that's what makes it a debate instead of a correction.
+
+---
+
+## 5. Animatic
+
+`renders/thonis-heracleion-animatic.mp4` is a rendered previz of this script —
+1080x1920, 30fps, 60 seconds — generated by `tools/render_short.py`.
+
+It is **not** the finished video. It exists to lock timing and staging before
+any AI-art credits get spent. What is real in it:
+
+- every cut, camera move and hold, at the exact timestamps in the table above
+- the full caption schedule, burned in with the real type treatment
+- a synthesized sound-design bed with the scored SFX hits, including the
+  0:50 silence beat
+- a scratch text-to-speech voiceover, speed-fitted per line, which is how the
+  closing re-time above was caught
+
+What is placeholder: the imagery. Every shot is procedural geometry standing in
+for the plate described in that row's AI prompt. Generate each scene from its
+prompt, then cut the results against this timeline.
+
+To re-render after editing timings:
+
+```
+pip install Pillow numpy imageio-ffmpeg && apt-get install -y espeak-ng
+python3 tools/render_short.py renders/thonis-heracleion-animatic.mp4
+```

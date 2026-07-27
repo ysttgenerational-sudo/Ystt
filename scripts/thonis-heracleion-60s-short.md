@@ -129,12 +129,29 @@ noise — no sampled library material, so there is nothing to licence or clear.
 All stems are the full 60 seconds starting at 0:00, so they drop onto a timeline
 with no offset.
 
-**The voiceover is scratch, not final.** It is espeak-ng driving MBROLA diphone
-voices, pitched down and put through a narration chain (de-essing, low-mid
-warmth, compression, short plate). Good enough to cut picture against; not good
-enough to publish. Record a human or use a commercial neural TTS for the real
-thing, and keep each line inside its slot length in the cue sheet — those slots
-are what the picture edit is built on.
+**Voice delivery.** Each line is synthesized phrase by phrase with real rests
+between them (0.30s after a sentence, 0.15s after a clause) rather than as one
+run-on utterance — MBROLA ignores SSML `<break>`, so the pauses are inserted in
+code where they can be controlled. Lines slow down to fill their slot instead of
+racing to the end; all nine deliver between 123 and 169 wpm.
+
+Clarity comes from a +5.5 dB lift at 2.6 kHz — the band where consonant
+definition lives — with 340 Hz mud cut, an 85 Hz high-pass and a 7.6 kHz de-ess.
+Weight for the mysterious quality comes from a 150 Hz shelf and the unhurried
+phrasing, not from reverb: the VO stem is deliberately close to dry (4% wet)
+because above roughly 6% the tail starts filling the rests between phrases and
+the storytelling pauses stop reading. A wet stem also cannot be un-wet later —
+add space in the mix, where the drone bed is already doing that work.
+
+`audio/voice-samples/` has the same line in five candidate voices, fully treated,
+so the voice can be picked by ear. Default is `mb-us3`, which measures clearest
+of the MBROLA sets. Switch with `SHORT_VOICE=mb-us2 python3 tools/render_audio.py`.
+
+**It is still scratch, not final.** This is diphone synthesis and it sounds like
+it. Good enough to cut picture against; not good enough to publish. Record a
+human or use a commercial neural TTS for the real thing, and keep each line
+inside its slot length in the cue sheet — those slots are what the picture edit
+is built on.
 
 Use `audio/stems/bed_and_sfx_no_vo.wav` as the bed under a real VO. It already
 contains the 0:50 silence beat.

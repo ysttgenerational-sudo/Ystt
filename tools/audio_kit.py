@@ -13,6 +13,7 @@ oscillators, so the whole bed is original and carries no licence obligations.
 
 import math
 import os
+import re
 import subprocess
 import wave
 
@@ -27,8 +28,10 @@ SCRATCH = os.environ.get(
 )
 
 # espeak-ng voice. MBROLA diphone voices are markedly less robotic than
-# espeak's own formant synthesis; mb-us2 is the male US diphone set.
-VOICE = os.environ.get("SHORT_VOICE", "mb-us2")
+# espeak's own formant synthesis. Of the US sets, mb-us3 measures clearest --
+# more energy in the presence band and less low-mid mud than mb-us2.
+# Override with SHORT_VOICE to audition another (see audio/voice-samples/).
+VOICE = os.environ.get("SHORT_VOICE", "mb-us3")
 VOICE_FALLBACK = "en-us+m3"
 VO_SEMITONES = -1.5   # resample-based shift; adds weight without chipmunking
 
@@ -89,15 +92,82 @@ def fftconv(x, ir):
     return y.astype(np.float32)
 
 
-def plate_ir(dur=1.6, decay=5.5, seed=4, dark=140):
-    """Synthetic plate-ish impulse response."""
+def plate_ir(dur=1.6, decay=5.5, seed=4, dark=140, predelay=0.008):
+    """Synthetic plate-ish impulse response. A longer pre-delay keeps the tail
+    off the consonants, which is what lets a voice sit in a big space without
+    going mushy."""
     n = int(dur * SR)
     k = np.linspace(0, 1, n, dtype=np.float32)
     x = np.random.default_rng(seed).standard_normal(n).astype(np.float32)
     ir = lp(x, dark) * np.exp(-k * decay)
-    ir[: int(0.008 * SR)] = 0.0          # pre-delay
-    ir /= np.abs(ir).max() + 1e-9
+    ir[: int(predelay * SR)] = 0.0
+    # Energy-normalise, not peak-normalise. Convolution sums across the whole
+    # impulse, so a peak-normalised noise IR multiplies level by roughly its
+    # square root length -- about 40x here. That made the `wet` parameter
+    # meaningless and drowned the dry signal in tail.
+    ir /= np.sqrt((ir ** 2).sum()) + 1e-9
     return ir
+
+
+def trim_silence(a, thresh=0.012, pad=0.015):
+    """espeak pads every utterance; strip it so pause lengths are ours."""
+    e = lp(np.abs(a), 300)
+    idx = np.where(e > thresh * e.max())[0]
+    if len(idx) == 0:
+        return a
+    p = int(pad * SR)
+    return a[max(0, idx[0] - p): min(len(a), idx[-1] + p)]
+
+
+def eq(a, bells=(), low_shelf=None, high_pass=None):
+    """Frequency-domain EQ.
+
+    The convolution helpers above are fine for shaping noise, but their kernels
+    are far too short to isolate a band cleanly -- an earlier version of the
+    narration chain used them and ended up cutting the presence region it meant
+    to boost. Bells are Gaussians in log-frequency, so the curve is smooth and
+    what is asked for is what is applied.
+
+    bells: (centre_hz, width_octaves, gain_db)
+    low_shelf: (corner_hz, gain_db)
+    high_pass: (corner_hz, order)
+    """
+    n = len(a)
+    m = 1 << max(1, (n - 1).bit_length())
+    F = np.fft.rfft(a, m)
+    fr = np.fft.rfftfreq(m, 1.0 / SR)
+    db = np.zeros_like(fr)
+    for f0, width, gain in bells:
+        x = np.log2(np.maximum(fr, 1e-3) / f0)
+        db += gain * np.exp(-(x ** 2) / (2.0 * width ** 2))
+    if low_shelf:
+        f0, gain = low_shelf
+        db += gain / (1.0 + (fr / f0) ** 2)
+    g = 10.0 ** (db / 20.0)
+    if high_pass:
+        f0, order = high_pass
+        g *= (fr ** 2 / (fr ** 2 + f0 ** 2)) ** (order / 2.0)
+    return np.fft.irfft(F * g, m)[:n].astype(np.float32)
+
+
+def band_energy(a, f_lo, f_hi):
+    """RMS in a frequency band, measured in the frequency domain."""
+    m = 1 << max(1, (len(a) - 1).bit_length())
+    F = np.fft.rfft(a, m)
+    fr = np.fft.rfftfreq(m, 1.0 / SR)
+    sel = (fr >= f_lo) & (fr < f_hi)
+    return float(np.sqrt((np.abs(F[sel]) ** 2).sum()) / m)
+
+
+def band_balance(a):
+    """Band levels relative to overall level, so gain changes do not skew it."""
+    tot = float(np.sqrt((a ** 2).mean())) + 1e-12
+    return {
+        "rumble<90": band_energy(a, 20, 90) / tot,
+        "mud300-600": band_energy(a, 300, 600) / tot,
+        "presence1.7-3.7k": band_energy(a, 1700, 3700) / tot,
+        "sib6-9k": band_energy(a, 6000, 9000) / tot,
+    }
 
 
 def compress(x, thresh=0.25, ratio=4.0, atk=0.004, rel=0.12):
@@ -445,30 +515,103 @@ def _espeak(text, wpm, path, voice=None):
     return read_wav(path)
 
 
-def voice_line(text, slot, idx=0, voice=None):
-    """Render one line, speed-fitted to its slot, then treated for broadcast."""
-    path = os.path.join(SCRATCH, f"vo_raw_{idx}.wav")
+# storyteller rhythm: how long to rest after each kind of phrase ending
+PAUSE_SENTENCE = 0.30
+PAUSE_CLAUSE = 0.15
+
+
+def phrase_split(text):
+    """Break a line into the phrases a narrator would actually pause between."""
+    out = []
+    for sentence in re.split(r"(?<=[.!?])\s+", text.strip()):
+        if not sentence:
+            continue
+        clauses = re.split(r"(?<=,)\s+", sentence)
+        for i, c in enumerate(clauses):
+            out.append((c, PAUSE_CLAUSE if i < len(clauses) - 1 else PAUSE_SENTENCE))
+    if out:
+        out[-1] = (out[-1][0], 0.0)
+    return out
+
+
+def _say(text, wpm, idx, voice, pause_scale=1.0):
+    """Synthesize phrase by phrase and rest between them. MBROLA ignores SSML
+    <break>, so the pauses are inserted here where we can actually control
+    them -- this is what makes it read as told rather than recited."""
+    parts = []
+    for j, (phrase, pause) in enumerate(phrase_split(text)):
+        path = os.path.join(SCRATCH, f"vo_raw_{idx}_{j}.wav")
+        seg = trim_silence(_espeak(phrase, wpm, path, voice))
+        parts.append(seg)
+        if pause > 0:
+            parts.append(np.zeros(int(pause * pause_scale * SR), dtype=np.float32))
+    a = np.concatenate(parts) if parts else np.zeros(1, dtype=np.float32)
+    return _pitch_shift(a, VO_SEMITONES)
+
+
+def voice_line(text, slot, idx=0, voice=None, target_fill=0.94):
+    """Render one line at a storytelling pace, fitted to its slot.
+
+    Fits by speaking rate first; only if the line still will not fit does it
+    start shortening the pauses, since losing the rests costs more than a
+    slightly quicker read."""
     os.makedirs(SCRATCH, exist_ok=True)
-    wpm = 165
-    a = None
-    for _ in range(7):
-        a = _pitch_shift(_espeak(text, wpm, path, voice), VO_SEMITONES)
+    wpm, pause_scale = 145, 1.0
+    a = _say(text, wpm, idx, voice, pause_scale)
+    for _ in range(8):
         d = len(a) / SR
         if d <= slot:
             break
-        wpm = int(wpm * (d / slot) * 1.02) + 1
+        over = d / slot
+        if over > 1.18 and pause_scale > 0.45:
+            pause_scale = max(0.45, pause_scale / min(over, 1.35))
+        wpm = int(wpm * min(over, 1.30) * 1.02) + 1
+        a = _say(text, wpm, idx, voice, pause_scale)
+    # if there is room left, slow back down toward a told-story pace
+    for _ in range(6):
+        d = len(a) / SR
+        if d >= slot * target_fill or wpm <= 118:
+            break
+        cand_wpm = max(118, int(wpm * 0.94))
+        cand = _say(text, cand_wpm, idx, voice, min(1.0, pause_scale * 1.06))
+        if len(cand) / SR > slot:
+            break
+        wpm, a = cand_wpm, cand
     return treat_voice(a), wpm
 
 
-def treat_voice(a):
-    """Narration chain: de-harsh, warm the low mids, compress, small plate."""
-    a = hp(a, 900)                                   # roll off rumble
-    a = a - 0.35 * bp(a, 26, 10)                     # tame 4-7k sibilance
-    a = a + 0.22 * lp(a, 260)                        # low-mid body
-    a = compress(a, thresh=0.20, ratio=3.5)
-    a = a + 0.10 * fftconv(a, plate_ir(1.3, 6.5))    # subtle space
+# 0.04 is a deliberate, measured choice: above ~0.06 the tail starts filling
+# the rests between phrases and the storytelling pauses stop reading.
+def treat_voice(a, wet=0.04):
+    """Narration chain aimed at clear-but-mysterious.
+
+    Clarity comes from lifting the 1.7-3.7 kHz presence band, where consonant
+    definition lives, and cutting 300-600 Hz mud. An earlier version subtracted
+    the presence band under the label "sibilance" -- that is the wrong range and
+    it was the main reason the voice sounded muffled. Real sibilance is 6-9 kHz.
+
+    Mystery comes from weight in the low shelf, the unhurried phrasing, and the
+    drone in the music bed -- not from drowning the voice in tail. The stem is
+    kept close to dry on purpose so an editor can add space to taste; a wet VO
+    stem cannot be un-wet later."""
+    a = eq(
+        a,
+        bells=(
+            (340.0, 0.80, -4.5),    # drain the boxy mud
+            (2600.0, 0.80, +5.5),   # presence: where consonants live
+            (7600.0, 0.60, -2.5),   # de-ess
+        ),
+        low_shelf=(150.0, +2.0),    # weight, kept modest so it stays clear
+        high_pass=(85.0, 2),
+    )
+    a = compress(a, thresh=0.18, ratio=3.0)
+    # dark, pre-delayed tail: space without smearing the consonants
+    # dark=10 puts the tail's corner near 4 kHz. Earlier values were in the
+    # hundreds, which corners at ~250 Hz -- that is not a dark reverb, it is a
+    # low-frequency wash, and it buried the presence band under itself.
+    a = a + wet * fftconv(a, plate_ir(1.6, 5.0, dark=10, predelay=0.035))
     a = normalize(a, 0.85)
-    return fade(a, 0.012, 0.05)
+    return fade(a, 0.012, 0.06)
 
 
 def render_vo_stem(voice=None, per_line=None):

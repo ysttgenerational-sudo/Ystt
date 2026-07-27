@@ -81,6 +81,19 @@ def main():
     me = A.render_mix(vo=np.zeros_like(vo), bed=A.render_bed_stem(), sfx=A.render_sfx_stem())
     A.write_wav(os.path.join(stem_dir, "bed_and_sfx_no_vo.wav"), me)
 
+    # audition set: same line in each candidate voice, fully treated, so the
+    # voice can be chosen by ear rather than by my metrics
+    print("rendering voice samples ...", flush=True)
+    sample_dir = os.path.join(out, "voice-samples")
+    demo = A.VO_LINES[3][3]
+    for v in ("mb-us3", "mb-us2", "mb-us1", "en-us+m3", "en-us+m1"):
+        try:
+            a, _ = A.voice_line(demo, 7.2, 90, voice=v)
+            A.write_wav(os.path.join(sample_dir, f"{v.replace('+', '_')}.wav"),
+                        A.normalize(a, 0.92))
+        except Exception as exc:                       # a voice may be absent
+            print(f"  skipped {v}: {exc}", flush=True)
+
     print("writing cue sheet ...", flush=True)
     lines = [
         "# Cue sheet — Thonis-Heracleion 60s Short",
@@ -122,13 +135,27 @@ def main():
         "",
         "## On the voiceover",
         "",
-        "The VO is **scratch**, not final. It is espeak-ng driving MBROLA diphone "
-        "voices, pitched down and run through a narration chain (de-essing, low-mid "
-        "warmth, compression, a short plate). That is good enough to lock timing and "
-        "to edit picture against, and it is genuinely not good enough to publish. "
-        "For the final cut, record a human or use a commercial neural TTS, and keep "
-        "each line inside the slot length in the table above — those slots are what "
-        "the picture edit is cut to.",
+        "Delivery is built for a told-story read: each line is synthesized phrase "
+        "by phrase with real rests between them (0.30s after a sentence, 0.15s "
+        "after a clause), because MBROLA ignores SSML `<break>`. Lines slow down "
+        "to fill their slot rather than racing to the end.",
+        "",
+        "The narration chain is: 85 Hz high-pass, −4.5 dB at 340 Hz to drain mud, "
+        "**+5.5 dB at 2.6 kHz for presence** — that band is where consonant "
+        "definition lives and it is what makes the read intelligible — −2.5 dB at "
+        "7.6 kHz to de-ess, a small 150 Hz shelf for weight, gentle compression, "
+        "and a dark plate with 35 ms pre-delay for space that does not smear "
+        "consonants.",
+        "",
+        "`voice-samples/` has the same line in five candidate voices, fully "
+        "treated. Default is `mb-us3`; switch with `SHORT_VOICE=mb-us2 python3 "
+        "tools/render_audio.py`.",
+        "",
+        "It is still **scratch, not final**. It is diphone synthesis, and it "
+        "sounds like it. Good enough to lock timing and cut picture against; not "
+        "good enough to publish. For the real thing record a human or use a "
+        "commercial neural TTS, and keep each line inside its slot length above — "
+        "those slots are what the picture edit is built on.",
     ]
     with open(os.path.join(out, "cue-sheet.md"), "w") as f:
         f.write("\n".join(lines) + "\n")

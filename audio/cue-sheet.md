@@ -6,15 +6,15 @@ All timecodes are from 0:00 of the cut. Every asset is 44.1 kHz / 16-bit stereo 
 
 | In | Line | Words | Length | Slot | Delivered rate | File |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0:00.35 | hook | 13 | 4.84s | 5.20s | 161 wpm | `vo/00_hook.wav` |
-| 0:05.90 | reveal | 13 | 4.91s | 5.30s | 159 wpm | `vo/01_reveal.wav` |
-| 0:11.30 | name | 13 | 6.04s | 6.30s | 129 wpm | `vo/02_name.wav` |
-| 0:18.30 | myth | 17 | 6.99s | 7.20s | 146 wpm | `vo/03_myth.wav` |
-| 0:26.35 | discovery | 14 | 6.10s | 6.90s | 138 wpm | `vo/04_discovery.wav` |
-| 0:34.20 | haul | 17 | 7.07s | 7.40s | 144 wpm | `vo/05_haul.wav` |
-| 0:42.30 | liquefy | 19 | 6.95s | 7.20s | 164 wpm | `vo/06_liquefy.wav` |
-| 0:50.60 | five-pct | 11 | 3.81s | 4.05s | 173 wpm | `vo/07_five-pct.wav` |
-| 0:54.90 | plato | 13 | 4.67s | 4.90s | 167 wpm | `vo/08_plato.wav` |
+| 0:00.35 | hook | 13 | 5.05s | 5.20s | 154 wpm | `vo/00_hook.wav` |
+| 0:05.90 | reveal | 13 | 5.22s | 5.30s | 150 wpm | `vo/01_reveal.wav` |
+| 0:11.30 | name | 13 | 6.23s | 6.30s | 125 wpm | `vo/02_name.wav` |
+| 0:18.30 | myth | 17 | 7.05s | 7.20s | 145 wpm | `vo/03_myth.wav` |
+| 0:26.35 | discovery | 14 | 6.85s | 6.90s | 123 wpm | `vo/04_discovery.wav` |
+| 0:34.20 | haul | 17 | 7.39s | 7.40s | 138 wpm | `vo/05_haul.wav` |
+| 0:42.30 | liquefy | 19 | 7.06s | 7.20s | 162 wpm | `vo/06_liquefy.wav` |
+| 0:50.60 | five-pct | 11 | 3.90s | 4.05s | 169 wpm | `vo/07_five-pct.wav` |
+| 0:54.90 | plato | 13 | 4.79s | 4.90s | 163 wpm | `vo/08_plato.wav` |
 
 Full text of each line:
 
@@ -77,4 +77,10 @@ Each stem is the full 60 seconds and starts at 0:00, so they drop onto a timelin
 
 ## On the voiceover
 
-The VO is **scratch**, not final. It is espeak-ng driving MBROLA diphone voices, pitched down and run through a narration chain (de-essing, low-mid warmth, compression, a short plate). That is good enough to lock timing and to edit picture against, and it is genuinely not good enough to publish. For the final cut, record a human or use a commercial neural TTS, and keep each line inside the slot length in the table above — those slots are what the picture edit is cut to.
+Delivery is built for a told-story read: each line is synthesized phrase by phrase with real rests between them (0.30s after a sentence, 0.15s after a clause), because MBROLA ignores SSML `<break>`. Lines slow down to fill their slot rather than racing to the end.
+
+The narration chain is: 85 Hz high-pass, −4.5 dB at 340 Hz to drain mud, **+5.5 dB at 2.6 kHz for presence** — that band is where consonant definition lives and it is what makes the read intelligible — −2.5 dB at 7.6 kHz to de-ess, a small 150 Hz shelf for weight, gentle compression, and a dark plate with 35 ms pre-delay for space that does not smear consonants.
+
+`voice-samples/` has the same line in five candidate voices, fully treated. Default is `mb-us3`; switch with `SHORT_VOICE=mb-us2 python3 tools/render_audio.py`.
+
+It is still **scratch, not final**. It is diphone synthesis, and it sounds like it. Good enough to lock timing and cut picture against; not good enough to publish. For the real thing record a human or use a commercial neural TTS, and keep each line inside its slot length above — those slots are what the picture edit is built on.
